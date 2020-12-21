@@ -1,0 +1,10 @@
+//apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.github.panpf.bintray-publish'
+publish {
+    userOrg = 'xxxxx '
+    groupId = 'com.shuanghui.mobile'
+    artifactId = 'scanner'
+    publishVersion = '1.0.0'
+    desc = 'A library of broom tools, custom camera sweep codes and PDA laser scanning, support for QR codes and barcodes.'
+    website = 'https://github.com/hpuhsp/QRScanner.git'
+}
