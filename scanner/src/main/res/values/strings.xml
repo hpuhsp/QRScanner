@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="empty"></string>
+    <string name="scanner_no_flash">手机没有闪光灯，无法进行该操作!></string>
+    <string name="scanner_scan_code_dsc">将条形码放入圈内，即可自动扫描</string>
+    <string name="scanner_scan_code_key_word">条形码</string>
+    <string name="scanner_open_camera_fail">打开摄像头失败</string>
+    <string name="scanner_camera_permision">请求访问相机权限</string>
+    <string name="scanner_prompt">提示</string>
+    <string name="scanner_confirm">确定</string>
+
+</resources>
