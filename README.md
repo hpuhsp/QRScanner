@@ -2,8 +2,6 @@
 
 ## A library of broom tools, custom camera sweep codes and PDA laser scanning,support for QR codes and barcodes.
 
----
-
 * 手电筒模式开关并实现自动对焦。
 * 附带扫码音效。
 * 自定义扫码UI，可进行二次定制开发。
