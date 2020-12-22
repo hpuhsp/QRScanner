@@ -1,8 +1,6 @@
-## QRScanner
-安卓扫码工具库(支持二维码、条形码)
-A library of broom tools, custom camera sweep codes and PDA laser scanning,
-support for QR codes and barcodes.
-
+# QRScanner
+## 安卓扫码工具库(支持二维码、条形码)
+## A library of broom tools, custom camera sweep codes and PDA laser scanning,support for QR codes and barcodes.
 
 * 手电筒模式开关并实现自动对焦。
 * 附带扫码音效。
