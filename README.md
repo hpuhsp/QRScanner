@@ -7,10 +7,18 @@
 * 自定义扫码UI，可进行二次定制开发。
 
 ### Version
+```
+    repositories {
+        ...
+        jcenter() // 或者 maven {url 'https://dl.bintray.com/517091/maven'}
+        ...
+    }
+```
 
 ```
 implementation 'com.shuanghui.mobile:scanner:1.2.0'
 ```
+
 ### Usage
 
 * Step1：开启扫码
