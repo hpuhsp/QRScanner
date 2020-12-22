@@ -31,8 +31,6 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-////kotlin类库上传
-//tasks.getByPath(":scanner:releaseAndroidJavadocs").enabled = false
 configurations.all {
     resolutionStrategy {
         eachDependency { details ->

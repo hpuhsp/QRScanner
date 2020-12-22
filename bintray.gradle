@@ -1,10 +1,29 @@
 //apply plugin: 'com.novoda.bintray-release'
 apply plugin: 'com.github.panpf.bintray-publish'
 publish {
-    userOrg = 'xxxxx '
+    userOrg = '517091'
     groupId = 'com.shuanghui.mobile'
     artifactId = 'scanner'
-    publishVersion = '1.0.0'
+    publishVersion = '1.2.0'
     desc = 'A library of broom tools, custom camera sweep codes and PDA laser scanning, support for QR codes and barcodes.'
     website = 'https://github.com/hpuhsp/QRScanner.git'
+}
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+//打包源码doc文档
+task javadoc(type: Javadoc) {
+    failOnError false
+    options.encoding = "UTF-8"
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
