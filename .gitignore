@@ -11,3 +11,4 @@ local.properties
 bintray.gradle
 nexus_upload.gradle
 gradle.properties
+publish_mavencentral.gradle
