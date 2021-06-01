@@ -1,6 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+// JitPack 配置(以下两行)
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.hpuhsp'
 
 android {
     compileSdkVersion 30
@@ -37,9 +40,9 @@ dependencies {
 //apply from: '../nexus_upload.gradle'
 
 // 上传Maven 中央仓库
-ext {
-    PUBLISH_GROUP_ID = 'io.github.hpuhsp'
-    PUBLISH_ARTIFACT_ID = 'qr-scanner'
-    PUBLISH_VERSION = '1.0.0'
-}
-apply from: '../publish_mavencentral.gradle'
+//ext {
+//    PUBLISH_GROUP_ID = 'io.github.hpuhsp'
+//    PUBLISH_ARTIFACT_ID = 'qr-scanner'
+//    PUBLISH_VERSION = '1.0.0'
+//}
+//apply from: '../publish_mavencentral.gradle'
