@@ -34,14 +34,17 @@ import net.sourceforge.zbar.SymbolSet;
 
 import com.hnsh.scanner.R;
 
+import java.lang.ref.WeakReference;
+
 public class DecodeHandler extends Handler {
-    private final CaptureActivity activity;
+    private final WeakReference<CaptureActivity> activity;
     private boolean running = true;
 
     public static final String BAR_CODE_KEY = "bar_code_key";
+    public static final String ALBUM_PIC_KEY = "album_pic_key";
 
     public DecodeHandler(CaptureActivity activity) {
-        this.activity = activity;
+        this.activity = new WeakReference<CaptureActivity>(activity);
     }
 
     @Override
@@ -67,7 +70,7 @@ public class DecodeHandler extends Handler {
      * @param height The height of the preview frame.
      */
     private void decode(byte[] data, int width, int height) {
-        Size size = activity.getCameraManager().getPreviewSize();
+        Size size = activity.get().getCameraManager().getPreviewSize();
         if (null != size) {
             // 这里需要将获取的data翻转一下，因为相机默认拿的的横屏的数据
             byte[] rotatedData = new byte[data.length];
@@ -82,7 +85,7 @@ public class DecodeHandler extends Handler {
             size.height = tmp;
         }
 
-        Rect rect = activity.getCropRect();
+        Rect rect = activity.get().getCropRect();
         Image barcode = new Image(width, height, "Y800");
         barcode.setData(data);
         if (rect != null) {
@@ -102,7 +105,7 @@ public class DecodeHandler extends Handler {
             }
         }
 
-        Handler handler = activity.getHandler();
+        Handler handler = activity.get().getHandler();
         if (!TextUtils.isEmpty(resultQRcode)) {
             // Don't log the barcode contents for security.
             if (handler != null) {
@@ -118,7 +121,5 @@ public class DecodeHandler extends Handler {
                 message.sendToTarget();
             }
         }
-
     }
-
 }

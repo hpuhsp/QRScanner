@@ -43,7 +43,6 @@ public class DecodeThread extends Thread {
     private final CountDownLatch handlerInitLatch;
 
     public DecodeThread(CaptureActivity activity, int decodeMode) {
-
         this.activity = activity;
         handlerInitLatch = new CountDownLatch(1);
     }
@@ -64,5 +63,4 @@ public class DecodeThread extends Thread {
         handlerInitLatch.countDown();
         Looper.loop();
     }
-
 }

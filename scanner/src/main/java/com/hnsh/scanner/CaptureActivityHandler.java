@@ -26,9 +26,11 @@ import com.hnsh.scanner.decode.DecodeHandler;
 import com.hnsh.scanner.decode.DecodeThread;
 import com.hnsh.scanner.zbarUtils.camera.CameraManager;
 
-public class CaptureActivityHandler extends Handler {
+import java.lang.ref.WeakReference;
 
-    private final CaptureActivity activity;
+public class CaptureActivityHandler extends Handler {
+    private WeakReference<CaptureActivity> activity;
+
     private final DecodeThread decodeThread;
     private final CameraManager cameraManager;
     private State state;
@@ -39,7 +41,7 @@ public class CaptureActivityHandler extends Handler {
     }
 
     public CaptureActivityHandler(CaptureActivity activity, CameraManager cameraManager, int decodeMode) {
-        this.activity = activity;
+        this.activity = new WeakReference<CaptureActivity>(activity);
         decodeThread = new DecodeThread(activity, decodeMode);
         decodeThread.start();
         state = State.SUCCESS;
@@ -57,14 +59,15 @@ public class CaptureActivityHandler extends Handler {
         } else if (message.what == R.id.decode_succeeded) {
             state = State.SUCCESS;
             Bundle bundle = message.getData();
-            activity.handleDecode(bundle.getString(DecodeHandler.BAR_CODE_KEY), bundle);
+            activity.get().handleDecode(bundle.getString(DecodeHandler.BAR_CODE_KEY), bundle);
         } else if (message.what == R.id.decode_failed) {// We're decoding as fast as possible, so when one decode fails,
             // start another.
             state = State.PREVIEW;
             cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
         } else if (message.what == R.id.return_scan_result) {
-            activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
-            activity.finish();
+            activity.get().setResult(Activity.RESULT_OK, (Intent) message.obj);
+            activity.get().finish();
+            activity.get().overridePendingTransition(R.anim.scanner_fade_in, R.anim.scanner_fade_out);
         }
     }
 
@@ -92,5 +95,4 @@ public class CaptureActivityHandler extends Handler {
             cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
         }
     }
-
 }

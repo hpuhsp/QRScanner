@@ -1,109 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/capture_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/capture_container"
+    <SurfaceView
+        android:id="@+id/capture_preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <SurfaceView
-            android:id="@+id/capture_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <ImageView
-            android:id="@+id/capture_mask_top"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_alignParentTop="true"
-            android:contentDescription="@string/empty" />
-
-
-        <ImageView
-            android:id="@+id/img_cancle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="3dip"
-            android:layout_marginTop="22dip"
-            android:src="@mipmap/ic_list_cancle_white" />
-
-        <FrameLayout
-            android:id="@+id/capture_crop_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/capture_mask_top"
-            android:layout_centerHorizontal="true">
-
-            <ImageView
-                android:id="@+id/capture_scan_rotate_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@mipmap/ic_scan_rotate_1" />
-
-            <ImageView
-                android:id="@+id/capture_scan_rotate_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@mipmap/ic_scan_rotate_2" />
-
-            <ImageView
-                android:id="@+id/capture_scan_rotate_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@mipmap/ic_scan_rotate_3" />
-
-        </FrameLayout>
-
-        <RelativeLayout
-            android:id="@+id/capture_mask_bottom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/capture_crop_view"
-            android:layout_alignParentBottom="true">
-
-            <TextView
-                android:id="@+id/tv_scan_dsc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="50dip"
-                android:gravity="center"
-                android:textColor="@color/scanner_white"
-                android:textSize="16dp" />
-        </RelativeLayout>
-
-        <ImageView
-            android:id="@+id/capture_mask_left"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/capture_mask_bottom"
-            android:layout_below="@+id/capture_mask_top"
-            android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/capture_crop_view" />
-
-        <ImageView
-            android:id="@+id/capture_mask_right"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/capture_mask_bottom"
-            android:layout_below="@+id/capture_mask_top"
-            android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/capture_crop_view" />
-    </RelativeLayout>
-
+        android:layout_height="match_parent" />
 
     <ImageView
-        android:id="@+id/capture_restart_scan"
+        android:id="@+id/capture_mask_top"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@string/empty" />
+
+    <ImageView
+        android:id="@+id/img_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="36dip"
-        android:src="@drawable/selecter_light_opt" />
+        android:layout_marginLeft="3dip"
+        android:layout_marginTop="22dip"
+        android:src="@mipmap/ic_list_cancel_white" />
+
+    <FrameLayout
+        android:id="@+id/capture_crop_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/capture_mask_top"
+        android:layout_centerHorizontal="true">
+
+        <ImageView
+            android:id="@+id/capture_scan_rotate_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@mipmap/ic_scan_rotate_1" />
+
+        <ImageView
+            android:id="@+id/capture_scan_rotate_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@mipmap/ic_scan_rotate_2" />
+
+        <ImageView
+            android:id="@+id/capture_scan_rotate_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@mipmap/ic_scan_rotate_3" />
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/capture_mask_left"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/capture_mask_bottom"
+        android:layout_below="@+id/capture_mask_top"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/capture_crop_view" />
+
+    <ImageView
+        android:id="@+id/capture_mask_right"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/capture_mask_bottom"
+        android:layout_below="@+id/capture_mask_top"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/capture_crop_view" />
+
+    <RelativeLayout
+        android:id="@+id/capture_mask_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/capture_crop_view"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/tv_scan_dsc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dip"
+            android:gravity="center"
+            android:textColor="@color/scanner_white"
+            android:textSize="16dp" />
+
+        <ImageView
+            android:id="@+id/capture_restart_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="36dip"
+            android:src="@drawable/selector_light_opt" />
+
+        <ImageView
+            android:id="@+id/btn_open_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="45dp"
+            android:layout_marginBottom="36dp"
+            android:src="@mipmap/ic_open_album" />
+
+    </RelativeLayout>
 
 </RelativeLayout>

@@ -17,13 +17,19 @@ package com.hnsh.scanner;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.hardware.Camera;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -39,17 +45,29 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
+import com.hnsh.scanner.decode.DecodeHandler;
 import com.hnsh.scanner.decode.DecodeThread;
 import com.hnsh.scanner.zbarUtils.Constants;
 import com.hnsh.scanner.zbarUtils.camera.CameraManager;
 import com.hnsh.scanner.zbarUtils.utils.BeepManager;
+import com.hnsh.scanner.zbarUtils.utils.BitmapUtil;
 import com.hnsh.scanner.zbarUtils.utils.InactivityTimer;
+import com.hnsh.scanner.zbarUtils.utils.QRCodeParseUtils;
 import com.hnsh.scanner.zbarUtils.utils.ReplacerUtils;
+import com.hnsh.scanner.zbarUtils.utils.MediaUtils;
 
+import net.sourceforge.zbar.Config;
+import net.sourceforge.zbar.Image;
+import net.sourceforge.zbar.ImageScanner;
+import net.sourceforge.zbar.Symbol;
+import net.sourceforge.zbar.SymbolSet;
+
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 
 /**
@@ -64,6 +82,7 @@ import java.lang.reflect.Field;
 public final class CaptureActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
+    private static final int OPEN_ALBUM_REQUEST_CODE = 1091;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
@@ -79,6 +98,7 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
     private ImageView scanRotate2;
     private ImageView scanRotate3;
     private ImageView imgCancle;
+    private ImageView btnOpenAlbum;
 
     private Rect mCropRect = null;
     private TextView scanDsc;
@@ -125,7 +145,6 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
         setContentView(R.layout.activity_capture);
-//        mBarCodeCheckCode = getIntent().getIntExtra(Constants.CHECK_BAR_FOR_RESULT_CODE, -1);
         findViewById();
         addEvents();
         initViews();
@@ -137,13 +156,14 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
         scanCropView = findViewById(R.id.capture_crop_view);
 
         scanLightOpt = findViewById(R.id.capture_restart_scan);
+        btnOpenAlbum = findViewById(R.id.btn_open_album);
         scanDsc = findViewById(R.id.tv_scan_dsc);
 
         scanRotate1 = findViewById(R.id.capture_scan_rotate_1);
         scanRotate2 = findViewById(R.id.capture_scan_rotate_2);
         scanRotate3 = findViewById(R.id.capture_scan_rotate_3);
 
-        imgCancle = findViewById(R.id.img_cancle);
+        imgCancle = findViewById(R.id.img_cancel);
         imgCancle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,10 +171,10 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
                 overridePendingTransition(R.anim.scanner_fade_in, R.anim.scanner_fade_out);
             }
         });
-
     }
 
     private void addEvents() {
+        // 打开照明
         scanLightOpt.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)) {
@@ -162,6 +182,14 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
                 } else {
                     toggleLight();
                 }
+            }
+        });
+
+        // 打开相册
+        btnOpenAlbum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openAlbum();
             }
         });
     }
@@ -189,6 +217,19 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
 //        scanDsc.setText(ReplacerUtils.makeLightKeyWord(keyWord, textDsc, this));
     }
 
+    /**
+     * 打开系统相册
+     */
+    private void openAlbum() {
+        Intent intent;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+        } else {
+            intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        }
+        startActivityForResult(intent, OPEN_ALBUM_REQUEST_CODE);
+    }
 
     @Override
     public void onResume() {
@@ -257,9 +298,24 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == OPEN_ALBUM_REQUEST_CODE && resultCode == RESULT_OK) { // 打开相册
+            if (null != data && null != data.getData()) {
+                String path = MediaUtils.getRealPathFromUri(CaptureActivity.this, data.getData());
+                if (null != path && !path.isEmpty()) {
+                    new QrCodeAsyncTask(this, path, data.getData()).execute(path);
+                } else {
+                    Toast.makeText(CaptureActivity.this, "获取图片路径失败！", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(CaptureActivity.this, "获取图片路径失败！", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     /**
@@ -272,28 +328,25 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
     public void handleDecode(final String rawResult, Bundle bundle) {
         inactivityTimer.onActivity();
         beepManager.playBeepSoundAndVibrate();
-
-//        handler.postDelayed(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                handleText(rawResult);
-//            }
-//        }, 500);
-
-        handleText(rawResult);
+        backForScannerResult(rawResult, bundle);
     }
 
-    private void handleText(String text) {
+    /**
+     * 返回扫描结果
+     *
+     * @param barcode
+     * @param bundle
+     */
+    private void backForScannerResult(String barcode, Bundle bundle) {
         scanRotate1.clearAnimation();
         scanRotate2.clearAnimation();
         scanRotate3.clearAnimation();
 
         Intent intent = new Intent();
-        intent.putExtra(Constants.SCAN_BAR_CODE_RESULT, text);
-        setResult(Activity.RESULT_OK, intent);
-        finish();
-        overridePendingTransition(R.anim.scanner_fade_in, R.anim.scanner_fade_out);
+        intent.putExtra(Constants.SCAN_BAR_CODE_RESULT, barcode);
+        intent.putExtra(Constants.SCAN_RESULT_DATA, bundle);
+        Message message = Message.obtain(handler, R.id.return_scan_result, intent);
+        message.sendToTarget();
     }
 
     private void initCamera(SurfaceHolder surfaceHolder) {
@@ -405,6 +458,9 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
 
     private boolean flag = false;
 
+    /**
+     * 切换闪光灯状态
+     */
     protected void toggleLight() {
         if (!flag) {
             flag = true;
@@ -423,5 +479,37 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
     public void onBackPressed() {
         finish();
         overridePendingTransition(R.anim.scanner_fade_in, R.anim.scanner_fade_out);
+    }
+
+    /**
+     * AsyncTask 静态内部类，防止内存泄漏
+     */
+    static class QrCodeAsyncTask extends AsyncTask<String, Integer, String> {
+        private WeakReference<CaptureActivity> mWeakReference;
+        private String path;
+        private Uri uri;
+
+        public QrCodeAsyncTask(CaptureActivity activity, String path, Uri uri) {
+            mWeakReference = new WeakReference<CaptureActivity>(activity);
+            this.path = path;
+            this.uri = uri;
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            Bitmap bitmap = BitmapUtil.decodeUri(mWeakReference.get(), uri, 500, 500);
+            return QRCodeParseUtils.decodeQRCodeByBitmap(bitmap);
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Message message = Message.obtain(mWeakReference.get().handler, R.id.decode_succeeded, OPEN_ALBUM_REQUEST_CODE);
+            Bundle bundle = new Bundle();
+            bundle.putString(DecodeHandler.BAR_CODE_KEY, null == s ? "" : s);
+            bundle.putString(DecodeHandler.ALBUM_PIC_KEY, path);
+            message.setData(bundle);
+            message.sendToTarget();
+        }
     }
 }

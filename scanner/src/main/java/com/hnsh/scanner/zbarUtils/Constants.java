@@ -1,9 +1,5 @@
 package com.hnsh.scanner.zbarUtils;
 
-
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
  * @Description:
  * @Author: Hsp
@@ -12,8 +8,12 @@ import android.os.Parcelable;
  * @UpdateRemark:
  */
 public class Constants {
-
-    //扫码返回条形码对应内容静参
-    public static final String CHECK_BAR_FOR_RESULT_CODE = "check_for_result";
+    /**
+     * 条码
+     */
     public static final String SCAN_BAR_CODE_RESULT = "barcode_result";
+    /**
+     * 扫描条码+原始图片等数据
+     */
+    public static final String SCAN_RESULT_DATA = "scan_result_data";
 }
