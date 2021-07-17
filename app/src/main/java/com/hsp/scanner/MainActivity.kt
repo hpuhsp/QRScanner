@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         if (requestCode == SCAN_REQUEST_CODE) {
-            CaptureActivity.start(this@MainActivity, SCAN_REQUEST_CODE, false)
+            CaptureActivity.start(this@MainActivity, SCAN_REQUEST_CODE, true)
         }
     }
 
@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
     @AfterPermissionGranted(SCAN_REQUEST_CODE)
     private fun checkScannerPermission() {
         if (EasyPermissions.hasPermissions(this, *CAMERA_PERMISSIONS)) {
-            CaptureActivity.start(this@MainActivity, SCAN_REQUEST_CODE, false)
+            CaptureActivity.start(this@MainActivity, SCAN_REQUEST_CODE, true)
         } else {
             EasyPermissions.requestPermissions(
                 this,
