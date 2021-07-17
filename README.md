@@ -11,13 +11,13 @@
 ```
     repositories {
         ...
-        jcenter() // 或者 maven {url 'https://dl.bintray.com/517091/maven'}
+                maven { url 'https://jitpack.io' }
         ...
     }
 ```
 
 ```
-implementation 'com.shuanghui.mobile:scanner:1.2.0'
+implementation 'com.github.hpuhsp:QRScanner:1.2.0'
 ```
 
 ### Usage
