@@ -2,24 +2,18 @@ package com.hnsh.scanner.zbarUtils.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
-import com.google.zxing.ChecksumException;
 import com.google.zxing.DecodeHintType;
-import com.google.zxing.FormatException;
 import com.google.zxing.MultiFormatReader;
-import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeReader;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -32,30 +26,36 @@ import java.util.Map;
  */
 public class QRCodeParseUtils {
 
-    public static final Map<DecodeHintType, Object> HINTS = new EnumMap<>(DecodeHintType.class);
+    static final Map<DecodeHintType, Object> HINT_MAP = new EnumMap<>(DecodeHintType.class);
 
     static {
-        List<BarcodeFormat> allFormats = new ArrayList<>();
-        allFormats.add(BarcodeFormat.AZTEC);
-        allFormats.add(BarcodeFormat.CODABAR);
-        allFormats.add(BarcodeFormat.CODE_39);
-        allFormats.add(BarcodeFormat.CODE_93);
-        allFormats.add(BarcodeFormat.CODE_128);
-        allFormats.add(BarcodeFormat.DATA_MATRIX);
-        allFormats.add(BarcodeFormat.EAN_8);
-        allFormats.add(BarcodeFormat.EAN_13);
-        allFormats.add(BarcodeFormat.ITF);
-        allFormats.add(BarcodeFormat.MAXICODE);
-        allFormats.add(BarcodeFormat.PDF_417);
-        allFormats.add(BarcodeFormat.QR_CODE);
-        allFormats.add(BarcodeFormat.RSS_14);
-        allFormats.add(BarcodeFormat.RSS_EXPANDED);
-        allFormats.add(BarcodeFormat.UPC_A);
-        allFormats.add(BarcodeFormat.UPC_E);
-        allFormats.add(BarcodeFormat.UPC_EAN_EXTENSION);
-        HINTS.put(DecodeHintType.TRY_HARDER, BarcodeFormat.QR_CODE);
-        HINTS.put(DecodeHintType.POSSIBLE_FORMATS, allFormats);
-        HINTS.put(DecodeHintType.CHARACTER_SET, "utf-8");
+        List<BarcodeFormat> allFormatList = new ArrayList<>();
+        allFormatList.add(BarcodeFormat.AZTEC);
+        allFormatList.add(BarcodeFormat.CODABAR);
+        allFormatList.add(BarcodeFormat.CODE_39);
+        allFormatList.add(BarcodeFormat.CODE_93);
+        allFormatList.add(BarcodeFormat.CODE_128);
+        allFormatList.add(BarcodeFormat.DATA_MATRIX);
+        allFormatList.add(BarcodeFormat.EAN_8);
+        allFormatList.add(BarcodeFormat.EAN_13);
+        allFormatList.add(BarcodeFormat.ITF);
+        allFormatList.add(BarcodeFormat.MAXICODE);
+        allFormatList.add(BarcodeFormat.PDF_417);
+        allFormatList.add(BarcodeFormat.QR_CODE);
+        allFormatList.add(BarcodeFormat.RSS_14);
+        allFormatList.add(BarcodeFormat.RSS_EXPANDED);
+        allFormatList.add(BarcodeFormat.UPC_A);
+        allFormatList.add(BarcodeFormat.UPC_E);
+        allFormatList.add(BarcodeFormat.UPC_EAN_EXTENSION);
+
+        // 可能的编码格式
+        HINT_MAP.put(DecodeHintType.POSSIBLE_FORMATS, allFormatList);
+        // 花更多的时间用于寻找图上的编码，优化准确性，但不优化速度
+        HINT_MAP.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        // 复杂模式，开启 PURE_BARCODE 模式（带图片 LOGO 的解码方案）
+//        ALL_HINT_MAP.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
+        // 编码字符集
+        HINT_MAP.put(DecodeHintType.CHARACTER_SET, "utf-8");
     }
 
     /**
@@ -65,13 +65,13 @@ public class QRCodeParseUtils {
      * @return 返回二维码图片里的内容 或 null
      */
     public static String decodeQRCodeByPath(String picturePath) {
-        return syncDecodeQRCode(getDecodeAbleBitmap(picturePath));
+        return syncDecodeQRCode(BitmapUtil.getBitmap(picturePath, 960, 720));
     }
 
     /**
      * 同步解析本地图片二维码。该方法是耗时操作，请在子线程中调用。
      *
-     * @param bitmap 要解析的二维码图片本地路径
+     * @param bitmap 要解析的二维码图片本地路径，可外部自定义Bitmap优化解析策略
      * @return 返回二维码图片里的内容 或 null
      */
     public static String decodeQRCodeByBitmap(Bitmap bitmap) {
@@ -84,8 +84,8 @@ public class QRCodeParseUtils {
      * @param bitmap 要解析的二维码图片
      * @return 返回二维码图片里的内容 或 null
      */
-    private static String syncDecodeQRCode(Bitmap bitmap) {
-        Result result = null;
+    public static String syncDecodeQRCode(Bitmap bitmap) {
+        Result result;
         RGBLuminanceSource source = null;
         try {
             int width = bitmap.getWidth();
@@ -93,13 +93,13 @@ public class QRCodeParseUtils {
             int[] pixels = new int[width * height];
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
             source = new RGBLuminanceSource(width, height, pixels);
-            result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINTS);
+            result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINT_MAP);
             return result.getText();
         } catch (Exception e) {
             e.printStackTrace();
             if (source != null) {
                 try {
-                    result = new MultiFormatReader().decode(new BinaryBitmap(new GlobalHistogramBinarizer(source)), HINTS);
+                    result = new MultiFormatReader().decode(new BinaryBitmap(new GlobalHistogramBinarizer(source)), HINT_MAP);
                     return result.getText();
                 } catch (Throwable e2) {
                     e2.printStackTrace();

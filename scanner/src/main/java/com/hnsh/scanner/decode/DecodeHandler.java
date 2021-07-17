@@ -16,7 +16,12 @@
 
 package com.hnsh.scanner.decode;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera.Size;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,7 +38,13 @@ import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 
 import com.hnsh.scanner.R;
+import com.hnsh.scanner.zbarUtils.utils.FileUtils;
+import com.hnsh.scanner.zbarUtils.utils.ThreadUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 public class DecodeHandler extends Handler {
@@ -86,7 +97,7 @@ public class DecodeHandler extends Handler {
         }
 
         Rect rect = activity.get().getCropRect();
-        Image barcode = new Image(width, height, "Y800");
+        final Image barcode = new Image(width, height, "Y800");
         barcode.setData(data);
         if (rect != null) {
             // zbar 解码库,不需要将数据进行旋转,因此设置裁剪区域是的x为 top, y为left,设置了裁剪区域,解码速度快了近5倍左右
@@ -109,11 +120,57 @@ public class DecodeHandler extends Handler {
         if (!TextUtils.isEmpty(resultQRcode)) {
             // Don't log the barcode contents for security.
             if (handler != null) {
-                Message message = Message.obtain(handler, R.id.decode_succeeded, result);
-                Bundle bundle = new Bundle();
-                bundle.putString(BAR_CODE_KEY, resultQRcode);
-                message.setData(bundle);
-                message.sendToTarget();
+                final String decodeResult = resultQRcode;
+                final int imgWidth = width;
+                final int imgHeight = height;
+                // 保存扫码的图片到本地
+                ThreadUtils.executeByIo(new ThreadUtils.Task<String>() {
+                    @Override
+                    public String doInBackground() throws Throwable {
+                        String imgPath = FileUtils.getTempPicPath(activity.get());
+                        YuvImage yuvimage = new YuvImage(barcode.getData(), ImageFormat.NV21, imgWidth, imgHeight, null);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        yuvimage.compressToJpeg(new Rect(0, 0, imgWidth, imgHeight), 80, baos);
+                        byte[] rectData = baos.toByteArray();
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(rectData, 0, rectData.length);
+                        // 旋转90度
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(90);
+                        Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, imgWidth, imgHeight, matrix, false);
+                        FileOutputStream os = null;
+                        try {
+                            os = new FileOutputStream(new File(imgPath));
+                            bmp.compress(Bitmap.CompressFormat.JPEG, 80, os);
+                            if (!bmp.isRecycled()) bmp.recycle();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                if (os != null) {
+                                    os.close();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        return imgPath;
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                        decodeSuccess(decodeResult, result);
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        decodeSuccess(decodeResult, "");
+                    }
+
+                    @Override
+                    public void onFail(Throwable t) {
+                        decodeSuccess(decodeResult, "");
+                    }
+                });
             }
         } else {
             if (handler != null) {
@@ -121,5 +178,17 @@ public class DecodeHandler extends Handler {
                 message.sendToTarget();
             }
         }
+    }
+
+    private void decodeSuccess(String decodeResult, String imgPath) {
+        Handler handler = activity.get().getHandler();
+        Message message = Message.obtain(handler, R.id.decode_succeeded, decodeResult);
+        Bundle bundle = new Bundle();
+        bundle.putString(BAR_CODE_KEY, decodeResult);
+        if (!TextUtils.isEmpty(imgPath)) {
+            bundle.putString(ALBUM_PIC_KEY, imgPath);
+        }
+        message.setData(bundle);
+        message.sendToTarget();
     }
 }

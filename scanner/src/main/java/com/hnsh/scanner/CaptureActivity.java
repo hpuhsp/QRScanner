@@ -15,14 +15,11 @@
  */
 package com.hnsh.scanner;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -55,17 +52,11 @@ import com.hnsh.scanner.decode.DecodeThread;
 import com.hnsh.scanner.zbarUtils.Constants;
 import com.hnsh.scanner.zbarUtils.camera.CameraManager;
 import com.hnsh.scanner.zbarUtils.utils.BeepManager;
-import com.hnsh.scanner.zbarUtils.utils.BitmapUtil;
 import com.hnsh.scanner.zbarUtils.utils.InactivityTimer;
 import com.hnsh.scanner.zbarUtils.utils.QRCodeParseUtils;
 import com.hnsh.scanner.zbarUtils.utils.ReplacerUtils;
-import com.hnsh.scanner.zbarUtils.utils.MediaUtils;
-
-import net.sourceforge.zbar.Config;
-import net.sourceforge.zbar.Image;
-import net.sourceforge.zbar.ImageScanner;
-import net.sourceforge.zbar.Symbol;
-import net.sourceforge.zbar.SymbolSet;
+import com.hnsh.scanner.zbarUtils.utils.FileUtils;
+import com.hnsh.scanner.zbarUtils.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -112,6 +103,19 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
     }
 
     private boolean isHasSurface = false;
+    private static final String ALBUM_PICKER = "album_picker";
+
+    /**
+     * 外部调用，以ForResult方式返回扫码结果
+     *
+     * @param activity
+     * @param requestCode
+     */
+    public static void start(FragmentActivity activity, int requestCode, boolean albumPicker) {
+        Intent intent = new Intent(activity, CaptureActivity.class);
+        intent.putExtra(ALBUM_PICKER, albumPicker);
+        activity.startActivityForResult(intent, requestCode);
+    }
 
     /**
      * 外部调用，以ForResult方式返回扫码结果
@@ -128,11 +132,23 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
      * 外部调用，以ForResult方式返回扫码结果
      *
      * @param fragment
-     * @param type
+     * @param requestCode
      */
-    public static void start(Fragment fragment, int type) {
+    public static void start(Fragment fragment, int requestCode, boolean albumPicker) {
         Intent intent = new Intent(fragment.getContext(), CaptureActivity.class);
-        fragment.startActivityForResult(intent, type);
+        intent.putExtra(ALBUM_PICKER, albumPicker);
+        fragment.startActivityForResult(intent, requestCode);
+    }
+
+    /**
+     * 外部调用，以ForResult方式返回扫码结果
+     *
+     * @param fragment
+     * @param requestCode
+     */
+    public static void start(Fragment fragment, int requestCode) {
+        Intent intent = new Intent(fragment.getContext(), CaptureActivity.class);
+        fragment.startActivityForResult(intent, requestCode);
     }
 
     @Override
@@ -145,12 +161,11 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
         setContentView(R.layout.activity_capture);
-        findViewById();
-        addEvents();
-        initViews();
+        initView();
+        clearCache();
     }
 
-    private void findViewById() {
+    private void initView() {
         scanPreview = findViewById(R.id.capture_preview);
         scanContainer = findViewById(R.id.capture_container);
         scanCropView = findViewById(R.id.capture_crop_view);
@@ -171,9 +186,7 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
                 overridePendingTransition(R.anim.scanner_fade_in, R.anim.scanner_fade_out);
             }
         });
-    }
 
-    private void addEvents() {
         // 打开照明
         scanLightOpt.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -192,9 +205,12 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
                 openAlbum();
             }
         });
+        btnOpenAlbum.setVisibility(getIntent().getBooleanExtra(ALBUM_PICKER, false) ? View.VISIBLE : View.GONE);
+
+        initScannerViews();
     }
 
-    private void initViews() {
+    private void initScannerViews() {
         inactivityTimer = new InactivityTimer(this);
         beepManager = new BeepManager(this);
 
@@ -214,7 +230,6 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
         String textDsc = getString(R.string.scanner_scan_code_dsc);
         String keyWord = getString(R.string.scanner_scan_code_key_word);
         scanDsc.setText(ReplacerUtils.matcherMoreKeywordtLight(this, textDsc, new String[]{keyWord}));
-//        scanDsc.setText(ReplacerUtils.makeLightKeyWord(keyWord, textDsc, this));
     }
 
     /**
@@ -306,7 +321,7 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == OPEN_ALBUM_REQUEST_CODE && resultCode == RESULT_OK) { // 打开相册
             if (null != data && null != data.getData()) {
-                String path = MediaUtils.getRealPathFromUri(CaptureActivity.this, data.getData());
+                String path = FileUtils.getRealPathFromUri(CaptureActivity.this, data.getData());
                 if (null != path && !path.isEmpty()) {
                     new QrCodeAsyncTask(this, path, data.getData()).execute(path);
                 } else {
@@ -322,31 +337,31 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
      * A valid barcode has been found, so give an indication of success and show
      * the results.
      *
-     * @param rawResult The contents of the barcode.
-     * @param bundle    The extras
+     * @param message decode data
      */
-    public void handleDecode(final String rawResult, Bundle bundle) {
+    public void handleDecode(Message message) {
         inactivityTimer.onActivity();
         beepManager.playBeepSoundAndVibrate();
-        backForScannerResult(rawResult, bundle);
+        backForScannerResult(message);
     }
 
     /**
      * 返回扫描结果
-     *
-     * @param barcode
-     * @param bundle
      */
-    private void backForScannerResult(String barcode, Bundle bundle) {
+    private void backForScannerResult(Message message) {
         scanRotate1.clearAnimation();
         scanRotate2.clearAnimation();
         scanRotate3.clearAnimation();
 
         Intent intent = new Intent();
-        intent.putExtra(Constants.SCAN_BAR_CODE_RESULT, barcode);
-        intent.putExtra(Constants.SCAN_RESULT_DATA, bundle);
-        Message message = Message.obtain(handler, R.id.return_scan_result, intent);
-        message.sendToTarget();
+        Bundle bundle = message.getData();
+        if (null != bundle) {
+            intent.putExtra(Constants.SCAN_BAR_CODE_RESULT, bundle.getString(DecodeHandler.BAR_CODE_KEY));
+            intent.putExtra(Constants.SCAN_RESULT_DATA, bundle);
+        }
+
+        Message targetMessage = Message.obtain(handler, R.id.return_scan_result, intent);
+        targetMessage.sendToTarget();
     }
 
     private void initCamera(SurfaceHolder surfaceHolder) {
@@ -497,8 +512,7 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
 
         @Override
         protected String doInBackground(String... strings) {
-            Bitmap bitmap = BitmapUtil.decodeUri(mWeakReference.get(), uri, 500, 500);
-            return QRCodeParseUtils.decodeQRCodeByBitmap(bitmap);
+            return QRCodeParseUtils.decodeQRCodeByPath(path);
         }
 
         @Override
@@ -511,5 +525,33 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
             message.setData(bundle);
             message.sendToTarget();
         }
+    }
+
+    /**
+     * 清楚本地缓存
+     */
+    private void clearCache() {
+        ThreadUtils.executeByIo(new ThreadUtils.Task<String>() {
+            @Override
+            public String doInBackground() throws Throwable {
+                FileUtils.deleteAllInDir(CaptureActivity.this);
+                return null;
+            }
+
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onFail(Throwable t) {
+
+            }
+        });
     }
 }

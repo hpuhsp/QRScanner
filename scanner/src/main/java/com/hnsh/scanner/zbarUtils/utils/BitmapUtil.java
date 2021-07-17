@@ -1,14 +1,12 @@
 package com.hnsh.scanner.zbarUtils.utils;
 
-import android.content.ContentResolver;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.util.Log;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.text.TextUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @Description:
@@ -18,101 +16,102 @@ import java.io.InputStream;
  * @UpdateRemark: 更新说明：
  */
 public class BitmapUtil {
+
     /**
-     * 读取一个缩放后的图片，限定图片大小，避免OOM
+     * Return bitmap.
      *
-     * @param uri       图片uri，支持“file://”、“content://”
-     * @param maxWidth  最大允许宽度
-     * @param maxHeight 最大允许高度
-     * @return 返回一个缩放后的Bitmap，失败则返回null
+     * @param filePath  The path of file.
+     * @param maxWidth  The maximum width.
+     * @param maxHeight The maximum height.
+     * @return bitmap
      */
-    public static Bitmap decodeUri(Context context, Uri uri, int maxWidth, int maxHeight) {
+    public static Bitmap getBitmap(final String filePath, final int maxWidth, final int maxHeight) {
+        if (TextUtils.isEmpty(filePath)) return null;
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true; //只读取图片尺寸
-        readBitmapScale(context, uri, options);
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, options);
+        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight);
+        options.inJustDecodeBounds = false;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        return BitmapFactory.decodeFile(filePath, options);
+    }
 
-        //计算实际缩放比例
-        int scale = 1;
-        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            if ((options.outWidth / scale > maxWidth &&
-                    options.outWidth / scale > maxWidth * 1.4) ||
-                    (options.outHeight / scale > maxHeight &&
-                            options.outHeight / scale > maxHeight * 1.4)) {
-                scale++;
-            } else {
-                break;
-            }
+    /**
+     * Return the sample size.
+     *
+     * @param options   The options.
+     * @param maxWidth  The maximum width.
+     * @param maxHeight The maximum height.
+     * @return the sample size
+     */
+    public static int calculateInSampleSize(final BitmapFactory.Options options,
+                                            final int maxWidth,
+                                            final int maxHeight) {
+        int height = options.outHeight;
+        int width = options.outWidth;
+        int inSampleSize = 1;
+        while (height > maxHeight || width > maxWidth) {
+            height >>= 1;
+            width >>= 1;
+            inSampleSize <<= 1;
         }
+        return inSampleSize;
+    }
 
-        options.inSampleSize = scale;
-        options.inJustDecodeBounds = false;//读取图片内容
-        options.inPreferredConfig = Bitmap.Config.RGB_565; //根据情况进行修改
-        Bitmap bitmap = null;
+    /**
+     * Return the rotated bitmap.
+     *
+     * @param src     The source of bitmap.
+     * @param degrees The number of degrees.
+     * @param px      The x coordinate of the pivot point.
+     * @param py      The y coordinate of the pivot point.
+     * @param recycle True to recycle the source of bitmap, false otherwise.
+     * @return the rotated bitmap
+     */
+    public static Bitmap rotate(final Bitmap src,
+                                final int degrees,
+                                final float px,
+                                final float py,
+                                final boolean recycle) {
+        if (isEmptyBitmap(src)) return null;
+        if (degrees == 0) return src;
+        Matrix matrix = new Matrix();
+        matrix.setRotate(degrees, px, py);
+        Bitmap ret = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
+        if (recycle && !src.isRecycled() && ret != src) src.recycle();
+        return ret;
+    }
+
+    /**
+     * Return the rotated degree.
+     *
+     * @param filePath The path of file.
+     * @return the rotated degree
+     */
+    public static int getRotateDegree(final String filePath) {
         try {
-            bitmap = readBitmapData(context, uri, options);
-        } catch (Throwable e) {
+            ExifInterface exifInterface = new ExifInterface(filePath);
+            int orientation = exifInterface.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+            );
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    return 90;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    return 180;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return 270;
+                default:
+                    return 0;
+            }
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        return bitmap;
-    }
-
-    private static void readBitmapScale(Context context, Uri uri, BitmapFactory.Options options) {
-        if (uri == null) {
-            return;
-        }
-        String scheme = uri.getScheme();
-        if (ContentResolver.SCHEME_CONTENT.equals(scheme) ||
-                ContentResolver.SCHEME_FILE.equals(scheme)) {
-            InputStream stream = null;
-            try {
-                stream = context.getContentResolver().openInputStream(uri);
-                BitmapFactory.decodeStream(stream, null, options);
-            } catch (Exception e) {
-                Log.w("readBitmapScale", "Unable to open content: " + uri, e);
-            } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (IOException e) {
-                        Log.e("readBitmapScale", "Unable to close content: " + uri, e);
-                    }
-                }
-            }
-        } else if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(scheme)) {
-            Log.e("readBitmapScale", "Unable to close content: " + uri);
-        } else {
-            Log.e("readBitmapScale", "Unable to close content: " + uri);
+            return -1;
         }
     }
 
-    private static Bitmap readBitmapData(Context context, Uri uri, BitmapFactory.Options options) {
-        if (uri == null) {
-            return null;
-        }
-        Bitmap bitmap = null;
-        String scheme = uri.getScheme();
-        if (ContentResolver.SCHEME_CONTENT.equals(scheme) ||
-                ContentResolver.SCHEME_FILE.equals(scheme)) {
-            InputStream stream = null;
-            try {
-                stream = context.getContentResolver().openInputStream(uri);
-                bitmap = BitmapFactory.decodeStream(stream, null, options);
-            } catch (Exception e) {
-                Log.e("readBitmapData", "Unable to open content: " + uri, e);
-            } finally {
-                if (stream != null) {
-                    try {
-                        stream.close();
-                    } catch (IOException e) {
-                        Log.e("readBitmapData", "Unable to close content: " + uri, e);
-                    }
-                }
-            }
-        } else if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(scheme)) {
-            Log.e("readBitmapData", "Unable to close content: " + uri);
-        } else {
-            Log.e("readBitmapData", "Unable to close content: " + uri);
-        }
-        return bitmap;
+    private static boolean isEmptyBitmap(final Bitmap src) {
+        return src == null || src.getWidth() == 0 || src.getHeight() == 0;
     }
 }

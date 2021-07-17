@@ -13,7 +13,7 @@ public class Constants {
      */
     public static final String SCAN_BAR_CODE_RESULT = "barcode_result";
     /**
-     * 扫描条码+原始图片等数据
+     * 扫描数据
      */
     public static final String SCAN_RESULT_DATA = "scan_result_data";
 }

@@ -105,7 +105,8 @@
             android:layout_alignParentBottom="true"
             android:layout_marginStart="45dp"
             android:layout_marginBottom="36dp"
-            android:src="@mipmap/ic_open_album" />
+            android:src="@mipmap/ic_open_album"
+            android:visibility="gone" />
 
     </RelativeLayout>
 

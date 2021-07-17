@@ -4,13 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.File;
+import java.io.FileFilter;
 
 /**
  * @Description:
@@ -19,7 +23,40 @@ import java.io.File;
  * @CreateTime: 2021/7/12 9:37
  * @UpdateRemark: 更新说明：
  */
-public class MediaUtils {
+public class FileUtils {
+
+    /**
+     * 获取保存图片地址
+     */
+    public static String getTempPicPath(Context context) {
+        return getPicSaveDir(context) + File.separator + System.currentTimeMillis() + ".png";
+    }
+
+    /**
+     * 获取缓存文件保存路径
+     */
+    public static String getPicSaveDir(Context context) {
+        File appCacheDir = null;
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
+                && hasExternalStoragePermission(context)
+        ) {
+            appCacheDir = new File(
+                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath(),
+                    "TempPic");
+        }
+        if (appCacheDir == null || !appCacheDir.exists() && !appCacheDir.mkdirs()) {
+            appCacheDir = context.getCacheDir();
+        }
+        return appCacheDir == null ? "" : appCacheDir.getPath();
+    }
+
+    /**
+     * 判断权限
+     */
+    private static boolean hasExternalStoragePermission(Context context) {
+        int perm = context.checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE");
+        return perm == PackageManager.PERMISSION_GRANTED;
+    }
 
     /**
      * 根据Uri获取图片的绝对路径
@@ -156,4 +193,72 @@ public class MediaUtils {
     private static boolean isDownloadsDocument(Uri uri) {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
+
+    /**
+     * Delete the all in directory.
+     *
+     * @return {@code true}: success<br>{@code false}: fail
+     */
+    public static boolean deleteAllInDir(Context context) {
+        return deleteFilesInDirWithFilter(new File(getPicSaveDir(context)), new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return true;
+            }
+        });
+    }
+
+    /**
+     * Delete all files that satisfy the filter in directory.
+     *
+     * @param dir    The directory.
+     * @param filter The filter.
+     * @return {@code true}: success<br>{@code false}: fail
+     */
+    public static boolean deleteFilesInDirWithFilter(final File dir, final FileFilter filter) {
+        if (dir == null || filter == null) return false;
+        // dir doesn't exist then return true
+        if (!dir.exists()) return true;
+        // dir isn't a directory then return false
+        if (!dir.isDirectory()) return false;
+        File[] files = dir.listFiles();
+        if (files != null && files.length != 0) {
+            for (File file : files) {
+                if (filter.accept(file)) {
+                    if (file.isFile()) {
+                        if (!file.delete()) return false;
+                    } else if (file.isDirectory()) {
+                        if (!deleteDir(file)) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Delete the directory.
+     *
+     * @param dir The directory.
+     * @return {@code true}: success<br>{@code false}: fail
+     */
+    private static boolean deleteDir(final File dir) {
+        if (dir == null) return false;
+        // dir doesn't exist then return true
+        if (!dir.exists()) return true;
+        // dir isn't a directory then return false
+        if (!dir.isDirectory()) return false;
+        File[] files = dir.listFiles();
+        if (files != null && files.length > 0) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    if (!file.delete()) return false;
+                } else if (file.isDirectory()) {
+                    if (!deleteDir(file)) return false;
+                }
+            }
+        }
+        return dir.delete();
+    }
+
 }

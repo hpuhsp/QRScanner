@@ -18,6 +18,7 @@ package com.hnsh.scanner;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -26,6 +27,7 @@ import com.hnsh.scanner.decode.DecodeHandler;
 import com.hnsh.scanner.decode.DecodeThread;
 import com.hnsh.scanner.zbarUtils.camera.CameraManager;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 
 public class CaptureActivityHandler extends Handler {
@@ -58,8 +60,7 @@ public class CaptureActivityHandler extends Handler {
             restartPreviewAndDecode();
         } else if (message.what == R.id.decode_succeeded) {
             state = State.SUCCESS;
-            Bundle bundle = message.getData();
-            activity.get().handleDecode(bundle.getString(DecodeHandler.BAR_CODE_KEY), bundle);
+            activity.get().handleDecode(message);
         } else if (message.what == R.id.decode_failed) {// We're decoding as fast as possible, so when one decode fails,
             // start another.
             state = State.PREVIEW;
