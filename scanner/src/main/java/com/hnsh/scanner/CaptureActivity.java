@@ -42,24 +42,24 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-
 import com.hnsh.scanner.decode.DecodeHandler;
 import com.hnsh.scanner.decode.DecodeThread;
 import com.hnsh.scanner.zbarUtils.Constants;
 import com.hnsh.scanner.zbarUtils.camera.CameraManager;
 import com.hnsh.scanner.zbarUtils.utils.BeepManager;
+import com.hnsh.scanner.zbarUtils.utils.FileUtils;
 import com.hnsh.scanner.zbarUtils.utils.InactivityTimer;
 import com.hnsh.scanner.zbarUtils.utils.QRCodeParseUtils;
 import com.hnsh.scanner.zbarUtils.utils.ReplacerUtils;
-import com.hnsh.scanner.zbarUtils.utils.FileUtils;
 import com.hnsh.scanner.zbarUtils.utils.ThreadUtils;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
