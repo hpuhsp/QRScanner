@@ -323,6 +323,8 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
             if (null != data && null != data.getData()) {
                 String path = FileUtils.getRealPathFromUri(CaptureActivity.this, data.getData());
                 if (null != path && !path.isEmpty()) {
+//                    String strResult = BitmapUtils.parseQRcode(path);
+//                    Log.d("TAG", "strResult: " + strResult);
                     new QrCodeAsyncTask(this, path, data.getData()).execute(path);
                 } else {
                     Toast.makeText(CaptureActivity.this, "获取图片路径失败！", Toast.LENGTH_SHORT).show();

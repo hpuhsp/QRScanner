@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -87,6 +86,8 @@ public class FileUtils {
     private static String getRealPathFromUriAboveApiAndroidQ(Context context, Uri uri) {
         Cursor cursor = null;
         String path = getRealPathFromUriAboveApiAndroidK(context, uri);
+        if (true)
+            return path;
         try {
             cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
@@ -216,19 +217,24 @@ public class FileUtils {
      * @return {@code true}: success<br>{@code false}: fail
      */
     public static boolean deleteFilesInDirWithFilter(final File dir, final FileFilter filter) {
-        if (dir == null || filter == null) return false;
+        if (dir == null || filter == null)
+            return false;
         // dir doesn't exist then return true
-        if (!dir.exists()) return true;
+        if (!dir.exists())
+            return true;
         // dir isn't a directory then return false
-        if (!dir.isDirectory()) return false;
+        if (!dir.isDirectory())
+            return false;
         File[] files = dir.listFiles();
         if (files != null && files.length != 0) {
             for (File file : files) {
                 if (filter.accept(file)) {
                     if (file.isFile()) {
-                        if (!file.delete()) return false;
+                        if (!file.delete())
+                            return false;
                     } else if (file.isDirectory()) {
-                        if (!deleteDir(file)) return false;
+                        if (!deleteDir(file))
+                            return false;
                     }
                 }
             }
@@ -243,18 +249,23 @@ public class FileUtils {
      * @return {@code true}: success<br>{@code false}: fail
      */
     private static boolean deleteDir(final File dir) {
-        if (dir == null) return false;
+        if (dir == null)
+            return false;
         // dir doesn't exist then return true
-        if (!dir.exists()) return true;
+        if (!dir.exists())
+            return true;
         // dir isn't a directory then return false
-        if (!dir.isDirectory()) return false;
+        if (!dir.isDirectory())
+            return false;
         File[] files = dir.listFiles();
         if (files != null && files.length > 0) {
             for (File file : files) {
                 if (file.isFile()) {
-                    if (!file.delete()) return false;
+                    if (!file.delete())
+                        return false;
                 } else if (file.isDirectory()) {
-                    if (!deleteDir(file)) return false;
+                    if (!deleteDir(file))
+                        return false;
                 }
             }
         }

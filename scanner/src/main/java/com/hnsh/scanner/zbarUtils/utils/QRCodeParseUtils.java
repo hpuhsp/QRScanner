@@ -67,8 +67,8 @@ public class QRCodeParseUtils {
      */
     public static String decodeQRCodeByPath(String picturePath) {
 //        不剪裁图片 原图展示
-        return syncDecodeQRCode(BitmapFactory.decodeFile(picturePath, null));
-//        return syncDecodeQRCode(BitmapUtil.getBitmap(picturePath, 960, 720));
+//        return syncDecodeQRCode(BitmapFactory.decodeFile(picturePath, null));
+        return syncDecodeQRCode(BitmapUtil.getBitmap(picturePath, 960, 720));
     }
 
     /**
