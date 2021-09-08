@@ -11,7 +11,6 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeReader;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -66,8 +65,6 @@ public class QRCodeParseUtils {
      * @return 返回二维码图片里的内容 或 null
      */
     public static String decodeQRCodeByPath(String picturePath) {
-//        不剪裁图片 原图展示
-//        return syncDecodeQRCode(BitmapFactory.decodeFile(picturePath, null));
         return syncDecodeQRCode(BitmapUtil.getBitmap(picturePath, 960, 720));
     }
 
@@ -95,21 +92,8 @@ public class QRCodeParseUtils {
             int height = bitmap.getHeight();
             int[] pixels = new int[width * height];
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-            /**
-             *  尝试另一种解析方式
-             *  @author lfc-LFC
-             *  created at 2021/9/7 18:22
-             */
-            QRCodeReader reader = new QRCodeReader();
-            Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
-            hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);//优化精度
-            hints.put(DecodeHintType.CHARACTER_SET, "utf-8");//解码设置编码方式为：utf-8
-            result = reader.decode(new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(width, height, pixels))), hints);
-            /**
-             *  之前的解析方式
-             */
-//            source = new RGBLuminanceSource(width, height, pixels);
-//            result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINT_MAP);
+            source = new RGBLuminanceSource(width, height, pixels);
+            result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINT_MAP);
             return result.getText();
         } catch (Exception e) {
             e.printStackTrace();
