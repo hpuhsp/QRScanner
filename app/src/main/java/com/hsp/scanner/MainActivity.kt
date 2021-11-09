@@ -17,6 +17,7 @@ import com.hnsh.scanner.CaptureActivity
 import com.hnsh.scanner.DeviceScanHelper
 import com.hnsh.scanner.decode.DecodeHandler
 import com.hnsh.scanner.zbarUtils.Constants
+import com.hnsh.scanner.zbarUtils.utils.BeepManager
 import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
@@ -44,12 +45,13 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
     }
 
     private lateinit var scanHelper: DeviceScanHelper
-
+    private var beepManager: BeepManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         btn_scanner.setOnClickListener(this)
+        btn_play.setOnClickListener(this)
         initScanner()
     }
 
@@ -128,6 +130,11 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
             R.id.btn_scanner -> {
                 checkScannerPermission()
             }
+            R.id.btn_play -> {
+                // 播放扫描成语音
+                beepManager = BeepManager(this, R.raw.scan_success)
+                beepManager?.autoPlay()
+            }
             else -> {
             }
         }
@@ -145,5 +152,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks,
                 *CAMERA_PERMISSIONS
             )
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        beepManager?.close()
     }
 }

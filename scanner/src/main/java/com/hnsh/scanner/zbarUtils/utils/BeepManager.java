@@ -49,10 +49,17 @@ public class BeepManager implements MediaPlayer.OnCompletionListener, MediaPlaye
     public BeepManager(Activity activity) {
         this.activity = activity;
         this.mediaPlayer = null;
-        updatePrefs();
+        updatePrefs(null);
     }
 
-    private synchronized void updatePrefs() {
+    public BeepManager(Activity activity, int audioResId) {
+        this.activity = activity;
+        this.mediaPlayer = null;
+        AssetFileDescriptor file = activity.getResources().openRawResourceFd(audioResId);
+        updatePrefs(file);
+    }
+
+    private synchronized void updatePrefs(AssetFileDescriptor file) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
         playBeep = shouldBeep(prefs, activity);
         vibrate = true;
@@ -61,11 +68,25 @@ public class BeepManager implements MediaPlayer.OnCompletionListener, MediaPlaye
             // too loud,
             // so we now play on the music stream.
             activity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-            mediaPlayer = buildMediaPlayer(activity);
+            if (null == file) {
+                mediaPlayer = buildMediaPlayer(activity);
+            } else {
+                mediaPlayer = buildCustomMediaPlayer(file);
+            }
         }
     }
 
     public synchronized void playBeepSoundAndVibrate() {
+        if (playBeep && mediaPlayer != null) {
+            mediaPlayer.start();
+        }
+        if (vibrate) {
+            Vibrator vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(VIBRATE_DURATION);
+        }
+    }
+
+    public void autoPlay() {
         if (playBeep && mediaPlayer != null) {
             mediaPlayer.start();
         }
@@ -109,6 +130,33 @@ public class BeepManager implements MediaPlayer.OnCompletionListener, MediaPlaye
         }
     }
 
+    /**
+     * 自定义播放文件
+     *
+     * @param file
+     * @return
+     */
+    private MediaPlayer buildCustomMediaPlayer(AssetFileDescriptor file) {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mediaPlayer.setOnCompletionListener(this);
+        mediaPlayer.setOnErrorListener(this);
+        try {
+            try {
+                mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
+            } finally {
+                file.close();
+            }
+            mediaPlayer.prepare();
+            mediaPlayer.setVolume(0.85f, 0.85f);
+            return mediaPlayer;
+        } catch (IOException ioe) {
+            Log.w(TAG, ioe);
+            mediaPlayer.release();
+            return null;
+        }
+    }
+
     @Override
     public void onCompletion(MediaPlayer mp) {
         // When the beep has finished playing, rewind to queue up another one.
@@ -125,7 +173,7 @@ public class BeepManager implements MediaPlayer.OnCompletionListener, MediaPlaye
             // possibly media player error, so release and recreate
             mp.release();
             mediaPlayer = null;
-            updatePrefs();
+            updatePrefs(null);
         }
         return true;
     }
@@ -137,5 +185,4 @@ public class BeepManager implements MediaPlayer.OnCompletionListener, MediaPlaye
             mediaPlayer = null;
         }
     }
-
 }
