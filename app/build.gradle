@@ -13,8 +13,8 @@ android {
         applicationId "com.hsp.scanner"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 11
-        versionName "1.6.0"
+        versionCode 12
+        versionName "1.6.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,10 +39,6 @@ android {
     // 视图绑定,根据具体模块和个人的习惯可以选择使用，目前未启用，采用Kotlin扩展引入布局文件方式
     buildFeatures {
         viewBinding true
-    }
-    lintOptions {
-        checkReleaseBuilds true
-        abortOnError false
     }
 }
 
