@@ -8,20 +8,40 @@ group = 'com.github.hpuhsp'
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
+    ndkVersion ' 21.1.6352462'
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
     }
     buildTypes {
         debug {
             minifyEnabled false
-            consumerProguardFiles 'proguard-rules.pro'
         }
         release {
             minifyEnabled false
             consumerProguardFiles 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+        freeCompilerArgs += ["-Xopt-in=kotlin.RequiresOptIn"]
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+    lintOptions {
+        checkReleaseBuilds true
+        abortOnError false
     }
 }
 
