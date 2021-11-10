@@ -17,8 +17,9 @@
 ```
 
 ```
-implementation 'com.github.hpuhsp:QRScanner:1.2.0'
+implementation 'com.github.hpuhsp:QRScanner:latestVersion' // 最新版本参考下方
 ```
+[![Jitpack](https://jitpack.io/v/hpuhsp/QRScanner.svg)](https://jitpack.io/#hpuhsp/QRScanner)
 
 ### Usage
 
