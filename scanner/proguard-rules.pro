@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Zxing
+-keep class com.google.zxing.** {*;}
+-keepclassmembers class com.google.zxing.** {*;}
+
+# Zbar
+-keep class net.sourceforge.zbar.** {*;}
+-keepclassmembers class net.sourceforge.zbar.** {*;}
+
