@@ -13,8 +13,8 @@ android {
         applicationId "com.hsp.scanner"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 12
-        versionName "1.6.2"
+        versionCode 14
+        versionName "1.6.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
