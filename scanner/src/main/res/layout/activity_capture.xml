@@ -33,24 +33,27 @@
 
         <ImageView
             android:id="@+id/capture_scan_rotate_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
             android:layout_gravity="center"
-            android:src="@mipmap/ic_scan_rotate_1" />
+            android:src="@mipmap/icon_first_scan_circle"
+            android:visibility="visible" />
 
         <ImageView
             android:id="@+id/capture_scan_rotate_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
             android:layout_gravity="center"
-            android:src="@mipmap/ic_scan_rotate_2" />
+            android:src="@mipmap/icon_second_scan_circle"
+            android:visibility="visible" />
 
         <ImageView
             android:id="@+id/capture_scan_rotate_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
             android:layout_gravity="center"
-            android:src="@mipmap/ic_scan_rotate_3" />
+            android:src="@mipmap/icon_third_scan_circle"
+            android:visibility="visible" />
 
     </FrameLayout>
 

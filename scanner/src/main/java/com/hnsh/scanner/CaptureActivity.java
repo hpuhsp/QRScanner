@@ -156,10 +156,7 @@ public final class CaptureActivity extends AppCompatActivity implements SurfaceH
         super.onCreate(icicle);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // 设置为全屏模式
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-        );
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_capture);
         initView();
         clearCache();

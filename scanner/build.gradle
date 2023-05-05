@@ -1,9 +1,12 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-// JitPack 配置(以下两行)
-apply plugin: 'com.github.dcendents.android-maven'
-group = 'com.github.hpuhsp'
+apply plugin: 'maven-publish'
+
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
 
 android {
     compileSdkVersion 30
@@ -44,6 +47,12 @@ android {
         checkReleaseBuilds true
         abortOnError false
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }
 
 dependencies {
@@ -61,6 +70,22 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.github.hpuhsp'
+            artifactId = 'QRScanner'
+            version = '1.6.5'
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+}
+
+
 //apply from: '../bintray.gradle'
 //apply from: '../nexus_upload.gradle'
 
