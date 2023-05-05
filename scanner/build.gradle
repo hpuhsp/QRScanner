@@ -11,7 +11,7 @@ task generateSourcesJar(type: Jar) {
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
-    ndkVersion '21.0.6113669' // Jitpack构建ndk版本，发布新版本时打开
+    ndkVersion '22.1.7171670' // Jitpack构建ndk版本，发布新版本时打开
 
     defaultConfig {
         minSdkVersion 21
