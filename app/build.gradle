@@ -1,18 +1,17 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
-    id 'kotlin-android-extensions'
+    id 'kotlin-parcelize'
 }
-
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.hsp.scanner"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdk 21
+        targetSdk 33
+
         versionCode 20
         versionName "1.7.0"
 
@@ -40,6 +39,7 @@ android {
     buildFeatures {
         viewBinding true
     }
+    ndkVersion '22.1.7171670'
 }
 
 dependencies {
@@ -54,7 +54,6 @@ dependencies {
     //noinspection LifecycleAnnotationProcessorWithJava8
     kapt 'androidx.lifecycle:lifecycle-compiler:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
