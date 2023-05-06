@@ -1,8 +1,8 @@
 plugins {
     id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
-    id 'kotlin-parcelize'
     id 'maven-publish'
 }
 task generateSourcesJar(type: Jar) {
@@ -11,12 +11,12 @@ task generateSourcesJar(type: Jar) {
 }
 
 android {
-    compileSdk 33
+    compileSdkVersion 30
     ndkVersion '22.1.7171670' // Jitpack构建ndk版本，发布新版本时打开
 
     defaultConfig {
-        minSdk 21
-        targetSdk 33
+        minSdkVersion 21
+        targetSdkVersion 30
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -74,15 +74,3 @@ publishing {
         }
     }
 }
-
-
-//apply from: '../bintray.gradle'
-//apply from: '../nexus_upload.gradle'
-
-// 上传Maven 中央仓库
-//ext {
-//    PUBLISH_GROUP_ID = 'io.github.hpuhsp'
-//    PUBLISH_ARTIFACT_ID = 'qr-scanner'
-//    PUBLISH_VERSION = '1.0.0'
-//}
-//apply from: '../publish_mavencentral.gradle'
