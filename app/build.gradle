@@ -1,19 +1,19 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
-    id 'kotlin-parcelize'
 }
 android {
-    compileSdk 33
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.hsp.scanner"
-        minSdk 21
-        targetSdk 33
+        minSdkVersion 21
+        targetSdkVersion 30
 
-        versionCode 21
-        versionName "1.7.1"
+        versionCode 22
+        versionName "1.7.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

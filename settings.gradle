@@ -1,20 +1,3 @@
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-        maven { url 'https://maven.aliyun.com/nexus/content/groups/public/' }
-    }
-}
-
-rootProject.name = "QRScanner"
 include ':scanner'
 include ':app'
+rootProject.name = "QRScanner"
