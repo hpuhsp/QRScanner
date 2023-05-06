@@ -66,7 +66,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.hpuhsp'
             artifactId = 'QRScanner'
-            version = '1.7.0'
+            version = '1.7.1'
 
             afterEvaluate {
                 from components.release
