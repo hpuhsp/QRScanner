@@ -13,6 +13,7 @@
     <application>
         <activity
             android:name=".CaptureActivity"
+            android:exported="false"
             android:screenOrientation="portrait" />
     </application>
 
