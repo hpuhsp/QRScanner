@@ -88,14 +88,7 @@
             android:textColor="@color/scanner_white"
             android:textSize="16dp" />
 
-        <ImageView
-            android:id="@+id/capture_restart_scan"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="36dip"
-            android:src="@drawable/selector_light_opt" />
+
 
         <ImageView
             android:id="@+id/btn_open_album"
@@ -109,5 +102,12 @@
             android:visibility="gone" />
 
     </RelativeLayout>
-
+    <ImageView
+        android:id="@+id/capture_restart_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dip"
+        android:layout_marginTop="22dip"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/selector_light_opt" />
 </RelativeLayout>
